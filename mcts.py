@@ -39,7 +39,7 @@ class Node:
 
 
 class MCTS:
-    def __init__(self, env, simulations=10000, exploration=10) -> None:
+    def __init__(self, env, simulations=10000, exploration=1) -> None:
         self.root = Node(env.copy(), None, None)
         self.root.expand_children()
 
@@ -48,11 +48,11 @@ class MCTS:
 
     def find_move(self):
         for _ in range(self.simulations):
-            # if _ % 1000 == 0:
-            #     print(_)
-            #     print(self.root.total_reward)
-            #     print([(c.num_samples, c.total_reward) for c in self.root.children])
-            #     input()
+            # if _ == self.simulations - 1:
+                # print(_)
+                # print(self.root.total_reward)
+                # print([(c.num_samples, c.total_reward) for c in self.root.children])
+                # input()
             node = self.select(self.root)
             node.expand_children()
             selected_node = self.uct(node.children)

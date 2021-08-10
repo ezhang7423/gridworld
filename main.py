@@ -1,3 +1,4 @@
+import time
 import mcts
 import numpy as np
 import gym
@@ -6,7 +7,6 @@ from gym_minigrid.wrappers import FullyObsWrapper, ImgObsWrapper
 
 env = gym.make("MiniGrid-Empty-8x8-v0")
 env = FullyObsWrapper(env)  # Get pixel observations
-env = ImgObsWrapper(env)  # Get rid of the 'mission' field
 
 ORIENTATIONS = [(1, 0), (0, 1), (-1, 0), (0, -1)]
 
@@ -52,11 +52,11 @@ class Model_Env:
         return f"Orientation: {self.orientation}, position: {self.position}"
 
 
-for i_episode in range(20):
-    observation = env.reset()
-    # mct = mcts.MCTS(env)
+# mct = mcts.MCTS(env)
+env.render()
+while True:
     print("Starting training loop")
-
+    observation = env.reset()
     for t in range(100):
         env.render()
 
@@ -71,4 +71,5 @@ for i_episode in range(20):
         if done:
             print("Episode finished after {} timesteps".format(t + 1))
             break
+
 env.close()
