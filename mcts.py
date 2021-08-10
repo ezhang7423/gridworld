@@ -1,7 +1,7 @@
 import random
 import math
-from copy import deepcopy
-MAX_ITERS = 20
+
+MAX_ITERS = 100
 
 
 class Node:
@@ -19,26 +19,27 @@ class Node:
 
     def expand_children(self):
         if self.is_leaf:
-            for action in range(self.env.action_space.n):
-                child_env = deepcopy(self.env)
+            for action in range(7):
+                child_env = self.env.copy()
                 child_env.step(action)
                 self.children.append(Node(child_env, action, self))
             self.is_leaf = False
 
     def uct(self, exploration):
         if self.num_samples == 0:  # bias towards exploring new states
-            return math.inf
+            return 200
 
-        uct= (self.total_reward / self.num_samples) + (
+        uct = (self.total_reward / self.num_samples) + (
             exploration
             * math.sqrt(math.log(self.parent.num_samples) / self.num_samples)
         )
+        # print(uct)
         return uct
 
 
 class MCTS:
-    def __init__(self, env, simulations=10000, exploration=.9) -> None:
-        self.root = Node(deepcopy(env), None, None)
+    def __init__(self, env, simulations=10000, exploration=10) -> None:
+        self.root = Node(env.copy(), None, None)
         self.root.expand_children()
 
         self.simulations = simulations
@@ -46,7 +47,7 @@ class MCTS:
 
     def find_move(self):
         for _ in range(self.simulations):
-            if _ % 100 == 0 or _ == self.simulations - 1:                
+            if False and _ % 100 == 0 or _ == self.simulations - 1:
                 print(_)
                 print(self.root.total_reward)
                 print([(c.num_samples, c.total_reward) for c in self.root.children])
@@ -62,9 +63,7 @@ class MCTS:
             if child.num_samples > best_choice.num_samples:
                 best_choice = child
 
-        # breakpoint()
-
-        # return best_choice.action, MCTS(best_choice.env)
+        return best_choice.action, MCTS(best_choice.env)
         return best_choice.action
 
     def select(self, node):
@@ -77,15 +76,16 @@ class MCTS:
 
     def rollout(self, node):
         # total_reward = 0
-        tmp_env = deepcopy(node.env)
+        tmp_env = node.env.copy()
         for i in range(MAX_ITERS):
-            
-            action = tmp_env.action_space.sample()
+
+            action = random.randint(0, 6)
             # need to create a new env each time
-            _, reward, done, _ = node.env.step(action)
+            node.env.step(action)
             # total_reward += reward
-            if done:
-                return reward
+            if node.env.done():
+                return node.env.reward()
+
         return 0
 
     def backup(self, node, reward):
