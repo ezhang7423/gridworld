@@ -43,7 +43,7 @@ class Model_Env:
         return min(max(old + new, 0), 5)
 
     def reward(self):
-        if self.position == (7, 7):
+        if self.position == (5, 5):
             return 1 - 0.9 * (self.step_count / 100)
         else:
             return 0
