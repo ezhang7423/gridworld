@@ -1,3 +1,4 @@
+from copy import deepcopy
 import random
 import math
 
@@ -27,7 +28,7 @@ class Node:
 
     def uct(self, exploration):
         if self.num_samples == 0:  # bias towards exploring new states
-            return 200
+            return 10
 
         uct = (self.total_reward / self.num_samples) + (
             exploration
@@ -38,7 +39,7 @@ class Node:
 
 
 class MCTS:
-    def __init__(self, env, simulations=10000, exploration=10) -> None:
+    def __init__(self, env, simulations=3000, exploration=3) -> None:
         self.root = Node(env.copy(), None, None)
         self.root.expand_children()
 
@@ -47,11 +48,11 @@ class MCTS:
 
     def find_move(self):
         for _ in range(self.simulations):
-            if False and _ % 100 == 0 or _ == self.simulations - 1:
-                print(_)
-                print(self.root.total_reward)
-                print([(c.num_samples, c.total_reward) for c in self.root.children])
-                print()
+
+            # print(_)
+            # print(self.root.total_reward)
+            # print([(c.num_samples, c.total_reward) for c in self.root.children])
+            # print()
             node = self.select(self.root)
             node.expand_children()
             selected_node = self.uct(node.children)
@@ -63,12 +64,17 @@ class MCTS:
             if child.num_samples > best_choice.num_samples:
                 best_choice = child
 
-        return best_choice.action, MCTS(best_choice.env)
+        new_root = deepcopy(best_choice)
+        new_root.depth = 0
+        new_root.parent = None
+        new_root.action = None
+        self.root = new_root
+        return best_choice.action, self
         return best_choice.action
 
     def select(self, node):
-        if node.depth > MAX_ITERS:
-            return node.parent
+        # if node.depth > MAX_ITERS:
+        #     return node.parent
 
         if node.is_leaf:
             return node
@@ -95,4 +101,14 @@ class MCTS:
             self.backup(node.parent, reward)
 
     def uct(self, list_of_nodes):
-        return max(list_of_nodes, key=lambda node: node.uct(self.exploration))
+        best = [list_of_nodes[0]]
+        best_uct = list_of_nodes[0].uct(self.exploration)
+        for n in list_of_nodes:
+            contender_uct = n.uct(self.exploration)
+            if contender_uct > best_uct:
+                best = [n]
+                best_uct = contender_uct
+            elif contender_uct == best_uct:
+                best.append(n)
+
+        return random.choice(best)

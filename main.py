@@ -69,7 +69,7 @@ for i_episode in range(20):
         print("Action: ", MiniGridEnv.Actions(action).name)
         observation, reward, done, info = env.step(action)
         # breakpoint()
-        print(env)
+        # print(env)
         if done:
             print("Episode finished after {} timesteps".format(t + 1))
             break
