@@ -9,7 +9,7 @@ class Node:
         self.env = env
         self.action = action
         self.num_samples = 0
-        self.num_finished = 0
+        self.total_reward = 0
         self.depth = 0
         self.parent = parent
         if self.parent:
@@ -27,9 +27,9 @@ class Node:
 
     def uct(self, exploration):
         if self.num_samples == 0:  # bias towards exploring new states
-            return 0.5
+            return 0.3
 
-        uct= (self.num_finished / self.num_samples) + (
+        uct= (self.total_reward / self.num_samples) + (
             exploration
             * math.sqrt(math.log(self.parent.num_samples) / self.num_samples)
         )
@@ -46,11 +46,15 @@ class MCTS:
 
     def find_move(self):
         for _ in range(self.simulations):
+            if _ % 25:
+                print(self.root.total_reward)
+                print([c.num_samples for c in self.root.children])
+                print([c.total_reward for c in self.root.children])
             node = self.select(self.root)
             node.expand_children()
             selected_node = self.uct(node.children)
-            successful = self.rollout(selected_node)
-            self.backup(selected_node, successful)
+            reward = self.rollout(selected_node)
+            self.backup(selected_node, reward)
 
         best_choice = self.root.children[0]
         for child in self.root.children:
@@ -58,9 +62,7 @@ class MCTS:
                 best_choice = child
 
         # breakpoint()
-        print(self.root.num_finished)
-        print([c.num_samples for c in self.root.children])
-        print([c.num_finished for c in self.root.children])
+
         # return best_choice.action, MCTS(best_choice.env)
         return best_choice.action
 
@@ -82,14 +84,14 @@ class MCTS:
             _, reward, done, _ = node.env.step(action)
             # total_reward += reward
             if done:
-                return True
-        return False
+                return reward
+        return 0
 
-    def backup(self, node, successful):
+    def backup(self, node, reward):
         node.num_samples += 1
-        node.num_finished += successful
+        node.total_reward += reward
         if node.parent:
-            self.backup(node.parent, successful)
+            self.backup(node.parent, reward)
 
     def uct(self, list_of_nodes):
         return max(list_of_nodes, key=lambda node: node.uct(self.exploration))
