@@ -9,3 +9,4 @@ EXPLORE
 * caching the tree 
 * modifying params
 * saving q-values 
+* using q-learning
