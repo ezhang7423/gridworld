@@ -27,7 +27,7 @@ class Node:
 
     def uct(self, exploration):
         if self.num_samples == 0:  # bias towards exploring new states
-            return 0.3
+            return math.inf
 
         uct= (self.total_reward / self.num_samples) + (
             exploration
@@ -37,7 +37,7 @@ class Node:
 
 
 class MCTS:
-    def __init__(self, env, simulations=1000, exploration=1) -> None:
+    def __init__(self, env, simulations=10000, exploration=.9) -> None:
         self.root = Node(deepcopy(env), None, None)
         self.root.expand_children()
 
@@ -46,10 +46,11 @@ class MCTS:
 
     def find_move(self):
         for _ in range(self.simulations):
-            if _ % 25:
+            if _ % 100 == 0 or _ == self.simulations - 1:                
+                print(_)
                 print(self.root.total_reward)
-                print([c.num_samples for c in self.root.children])
-                print([c.total_reward for c in self.root.children])
+                print([(c.num_samples, c.total_reward) for c in self.root.children])
+                print()
             node = self.select(self.root)
             node.expand_children()
             selected_node = self.uct(node.children)
