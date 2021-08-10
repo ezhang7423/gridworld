@@ -48,11 +48,11 @@ class MCTS:
 
     def find_move(self):
         for _ in range(self.simulations):
-
-            # print(_)
-            # print(self.root.total_reward)
-            # print([(c.num_samples, c.total_reward) for c in self.root.children])
-            # print()
+            # if _ % 100 == 0:
+            #     print(_)
+            #     print(self.root.total_reward)
+            #     print([(c.num_samples, c.total_reward) for c in self.root.children])
+            #     print()
             node = self.select(self.root)
             node.expand_children()
             selected_node = self.uct(node.children)
@@ -64,12 +64,12 @@ class MCTS:
             if child.num_samples > best_choice.num_samples:
                 best_choice = child
 
-        new_root = deepcopy(best_choice)
-        new_root.depth = 0
-        new_root.parent = None
-        new_root.action = None
-        self.root = new_root
-        return best_choice.action, self
+        # new_root = deepcopy(best_choice)
+        # new_root.depth = 0
+        # new_root.parent = None
+        # new_root.action = None
+        # self.root = new_root
+        # return best_choice.action, self
         return best_choice.action
 
     def select(self, node):

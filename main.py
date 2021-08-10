@@ -12,13 +12,7 @@ ORIENTATIONS = [(1, 0), (0, 1), (-1, 0), (0, -1)]
 
 
 class Model_Env:
-    def __init__(
-        self, state=None, step_count=0, orientation=0, position=(0, 0)
-    ) -> None:
-        if state is None:
-            self.state = np.zeros((8, 8))
-        else:
-            self.state = state
+    def __init__(self, step_count=0, orientation=0, position=(0, 0)) -> None:
 
         self.orientation = orientation
         self.position = position
@@ -39,15 +33,14 @@ class Model_Env:
             )
 
     def copy(self):
-        return Model_Env(
-            np.copy(self.state), self.step_count, self.orientation, self.position
-        )
+        return Model_Env(self.step_count, self.orientation, self.position)
 
     def done(self):
-        return self.position == (7, 7)
+        return self.position == (5, 5)
+
     @staticmethod
     def calc_new_position(old, new):
-        return min(max(old + new, 0), 7)
+        return min(max(old + new, 0), 5)
 
     def reward(self):
         if self.position == (7, 7):
@@ -55,16 +48,21 @@ class Model_Env:
         else:
             return 0
 
+    def __str__(self) -> str:
+        return f"Orientation: {self.orientation}, position: {self.position}"
+
 
 for i_episode in range(20):
     observation = env.reset()
     # mct = mcts.MCTS(env)
     print("Starting training loop")
-    mct = mcts.MCTS(Model_Env())
 
     for t in range(100):
         env.render()
-        action, mct = mct.find_move()
+
+        pos = (env.agent_pos[0] - 1, env.agent_pos[1] - 1)
+        mct = mcts.MCTS(Model_Env(orientation=env.agent_dir, position=pos))
+        action = mct.find_move()
         # action = mct.find_move()
         print("Action: ", MiniGridEnv.Actions(action).name)
         observation, reward, done, info = env.step(action)
